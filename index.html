@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>かわい猫製のオーディオプレーヤー</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+  <style>
+    input[type=range]::-moz-range-progress {
+      background-color: linear-gradient(to right, #4A5568 0%, #4A5568 50%, #CBD5E0 50%, #CBD5E0 100%);
+    }
+  </style>
+  
+</head>
+
+<body class="bg-[#111111]">
+  <div class="fixed p-5 z-50">
+    <div id="stopped-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-red-800 bg-[#111111] text-red-400" role="alert">
+      オーディオが停止しました。
+    </div>
+    <div id="aborted-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-red-800 bg-[#111111] text-red-400" role="alert">
+      オーディオの再生が中断されました。
+    </div>
+    <div id="error-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-red-800 bg-[#111111] text-red-400" role="alert">
+      オーディオの再生に失敗しました。
+    </div>
+    <div id="loadeddata-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-green-800 bg-[#111111] text-green-400" role="alert">
+      データの読み込みに成功しました!
+    </div>
+    <div id="loadedmetadata-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-green-800 bg-[#111111] text-green-400" role="alert">
+      メタデータのロードに成功しました!
+    </div>
+    <div id="loadstart-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-green-800 bg-[#111111] text-green-400" role="alert">
+      オーディオの読み込みを開始しました!
+    </div>
+    <div id="pause-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-red-800 bg-[#111111] text-red-400" role="alert">
+      オーディオが一時停止しました。
+    </div>
+    <div id="playing-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-green-800 bg-[#111111] text-green-400" role="alert">
+      オーディオが再生中です。
+    </div>
+    <div id="played-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-green-800 bg-[#111111] text-green-400" role="alert">
+      オーディオが再生しました。
+    </div>
+    <div id="progress-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-yellow-800 bg-[#111111] text-yellow-400" role="alert">
+      オーディオが再生しました。
+    </div>
+    <div id="ratechange-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-blue-800 bg-[#111111] text-blue-400" role="alert">
+      オーディオの再生速度が変更されました。
+    </div>
+    <div id="seeked-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-green-800 bg-[#111111] text-green-400" role="alert">
+      オーディオの再生位置が変更されました。
+    </div>
+    <div id="seeking-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-yellow-800 bg-[#111111] text-yellow-400" role="alert">
+      オーディオの再生位置が変更されました。
+    </div>
+    <div id="stalled-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-red-800 bg-[#111111] text-red-400" role="alert">
+      オーディオの再生が停止しました。
+    </div>
+    <div id="suspend-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-red-800 bg-[#111111] text-red-400" role="alert">
+      オーディオの再生が中断されました。
+    </div>
+    <div id="timeupdate-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-blue-800 bg-[#111111] text-blue-400" role="alert">
+      オーディオの再生時間が変更されました。
+    </div>
+    <div id="volumechange-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-blue-800 bg-[#111111] text-blue-400" role="alert">
+      オーディオの音量が変更されました。
+    </div>
+    <div id="waiting-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-yellow-800 bg-[#111111] text-yellow-400" role="alert">
+      オーディオの再生が待機中です。
+    </div>
+    <div id="canplay-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-green-800 bg-[#111111] text-green-400" role="alert">
+      オーディオが再生可能になりました。
+    </div>
+    <div id="canplaythrough-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-green-800 bg-[#111111] text-green-400" role="alert">
+      オーディオが再生可能になりました。
+    </div>
+    <div id="durationchange-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-blue-800 bg-[#111111] text-blue-400" role="alert">
+      オーディオが終了しました。
+    </div>
+    <div id="ended-alert" class="hidden p-4 mb-4 text-sm rounded-lg border border-green-800 bg-[#111111] text-green-400" role="alert">
+      オーディオが終了しました。
+    </div>
+  </div>
+  <div class="fixed z-50 w-full h-16 max-w-lg -translate-x-1/2 bg-black border border-blue-600 rounded-full bottom-4 left-1/2">
+      <div class="grid h-full max-w-lg grid-cols-5 mx-auto">
+          <button data-tooltip-target="tooltip-shuffle" type="button" data-amplitude-playlist="official_track" class="amplitude-shuffle inline-flex flex-col items-center justify-center px-5 rounded-s-full hover:bg-gray-900 group">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mb-1 text-gray-500 group-hover:text-blue-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+              </svg>
+
+              <span class="sr-only">ごまかす</span>
+          </button>
+          <div id="tooltip-shuffle" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip">
+            ごまかす
+              <div class="tooltip-arrow" data-popper-arrow></div>
+          </div>
+          <button data-tooltip-target="tooltip-previous" type="button" data-amplitude-playlist="official_track" class="amplitude-prev inline-flex flex-col items-center justify-center px-5 hover:bg-gray-900 group">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mb-1 text-gray-500 group-hover:text-blue-600">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061A1.125 1.125 0 0 1 21 8.689v8.122ZM11.25 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061a1.125 1.125 0 0 1 1.683.977v8.122Z" />
+              </svg>
+              <span class="sr-only">前の</span>
+          </button>
+          <div id="tooltip-previous" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip">
+            前の
+              <div class="tooltip-arrow" data-popper-arrow></div>
+          </div>
+          <div class="flex items-center justify-center">
+              <button data-tooltip-target="tooltip-play" type="button" data-amplitude-playlist="official_track" class="amplitude-play-pause inline-flex items-center justify-center w-10 h-10 font-medium bg-blue-600 rounded-full hover:bg-blue-700 group focus:ring-4 focus:ring-blue-300 focus:outline-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5V18M15 7.5V18M3 16.811V8.69c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811Z" />
+                  </svg>
+                  <span class="sr-only">遊ぶ</span>
+              </button>
+          </div>
+          <div id="tooltip-play" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip">
+            遊ぶ
+              <div class="tooltip-arrow" data-popper-arrow></div>
+          </div>
+        <button data-tooltip-target="tooltip-next" type="button" data-amplitude-playlist="official_track" class="amplitude-next inline-flex flex-col items-center justify-center px-5 hover:bg-gray-900 group">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mb-1 text-gray-500 group-hover:text-blue-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z" />
+            </svg>
+            <span class="sr-only">次の</span>
+        </button>
+        <div id="tooltip-next" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip">
+            次の
+            <div class="tooltip-arrow" data-popper-arrow></div>
+        </div>
+          <button data-tooltip-target="tooltip-repeat" data-amplitude-playlist="official_track" type="button" class="amplitude-repeat-song inline-flex flex-col items-center justify-center px-5 rounded-e-full hover:bg-gray-900 group">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mb-1 text-gray-500 group-hover:text-blue-600">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            <span class="sr-only">繰り返す</span>
+          </button>
+          <div id="tooltip-repeat" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip">
+            繰り返す
+              <div class="tooltip-arrow" data-popper-arrow></div>
+          </div>
+      </div>
+  </div>
+  <div class="p-5">
+    <h1 class="text-white text-2xl font-bold">私の音楽ストリーム</h1>
+    <p class="text-gray-400 text-sm">かわい猫製 - <a href="https://github.com/kawaiinekolab/audioplayer" class="mt-2 text-white text-sm">GitHubのスター</a></p>
+  </div>
+  <div data-amplitude-song-index="0" class="amplitude-song-container flex grid sm:grid-cols-3">
+    <div class="p-5">
+      <div class="p-6 drop-shadow-lg bg-black rounded-lg sm:h-screen">
+        <div class="flex grid grid-cols-2">
+          <div class="info">
+            <h1 class="text-2xl text-white font-bold" data-amplitude-song-info="name"></h1>
+            <p class="text-gray-500 dark:text-gray-400" data-amplitude-song-info="artist"></p>
+          </div>
+          <div class="song-image">
+            <img class="rounded-full float-right w-16 h-16" data-amplitude-song-info="cover_art_url" />
+          </div>
+        </div>
+        <div class="mt-2 flex grid grid-cols-2">
+          <div>
+            <button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" class="inline-flex flex-col items-center justify-center px-2 py-2 rounded-lg hover:bg-gray-900 group float-left">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+            </button>
+            <div id="dropdown" class="z-10 hidden bg-black divide-y divide-gray-100 rounded-lg shadow w-34">
+                <ul class="py-2 text-sm text-white" aria-labelledby="dropdownDefaultButton">
+                  <li>
+                    <button class="amplitude-playback-speed-10 block px-4 py-2 hover:bg-gray-900 hover:bg-gray-600">Play at 1.0 speed</button>
+                  </li>
+                  <li>
+                    <button class="amplitude-playback-speed-15 block px-4 py-2 hover:bg-gray-900 hover:bg-gray-600">Play at 1.5 speed</button>
+                  </li>
+                  <li>
+                    <button class="amplitude-playback-speed-20 block px-4 py-2 hover:bg-gray-900 hover:bg-gray-600">Play at 2.0 speed</button>
+                  </li>
+                </ul>
+            </div>
+          </div>
+          <div>
+            <button class="amplitude-mute inline-flex flex-col items-center justify-center px-2 py-2 rounded-lg hover:bg-gray-900 group float-right">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="mt-2">
+          <div class="flex grid grid-cols-2">
+            <div class="mb-2"><p class="float-left text-white"><span class="amplitude-current-hours"></span>:<span class="amplitude-current-minutes"></span>:<span class="amplitude-current-seconds"></span></p></div>
+            <div><p class="float-right text-white"><span class="amplitude-duration-hours"></span>:<span class="amplitude-duration-minutes"></span>:<span class="amplitude-duration-seconds"></span></p></div>
+          </div>
+          <div class="relative">
+            <input type="range" class="absolute amplitude-song-slider w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer" data-amplitude-playlist="official_track" step=".1"/>
+          </div>
+        </div>
+        <div class="mt-2">
+          <div class="mt-2 relative mb-6">
+              <label for="labels-range-input" class="mt-2 mb-2 text-white font-bold">ボリューム</label>
+              <input id="labels-range-input" type="range" value="35" min="0" max="100" class="amplitude-volume-slider w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer">
+              <button class="amplitude-volume-down text-sm text-gray-500 dark:text-gray-400 absolute start-0 -bottom-6">
+                音量を下げる
+              </button>
+              <button class="amplitude-volume-up text-sm text-gray-500 dark:text-gray-400 absolute end-0 -bottom-6">
+                音量を上げる
+              </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="p-6">
+      <h1 class="text-2xl font-bold text-white">私の軌跡</h1>
+      <div class="mt-2">
+        <div>
+          <div data-amplitude-playlist="official_track" data-amplitude-song-index="0" class="amplitude-play-pause amplitude-song-container hover:bg-black hover:drop-shadow-lg rounded-lg p-2 flex">
+            <!-- 画像の側面に戻る -->
+            <div class="p-2">
+              <img class="w-10 h-10 rounded-full" src="assets/cover/art/1.png">
+            </div>
+            <div class="ml-5 mt-1">
+              <h1 class="font-bold text-white">
+                Even
+              </h1>
+              <p class="text-white">
+                Macardes De Producez
+              </p>
+            </div>
+            
+          </div>
+          <div data-amplitude-playlist="official_track" data-amplitude-song-index="1" class="amplitude-play-pause amplitude-song-container hover:bg-black hover:drop-shadow-lg rounded-lg p-2 flex">
+            <!-- 画像の側面に戻る -->
+            <div class="p-2">
+              <img class="w-10 h-10 rounded-full" src="assets/cover/art/2.png">
+            </div>
+            <div class="ml-5 mt-1">
+              <h1 class="font-bold text-white">
+                Not Easy
+              </h1>
+              <p class="text-white">
+                Macardes De Producez
+              </p>
+            </div>
+
+          </div>
+        </div>
+        <div class="flex items-center justify-center">
+          <button data-amplitude-playlist="official_track" class="amplitude-prev inline-flex flex-col items-center justify-center px-5 py-3 rounded-full hover:bg-gray-900 group">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061A1.125 1.125 0 0 1 21 8.689v8.122ZM11.25 16.811c0 .864-.933 1.406-1.683.977l-7.108-4.061a1.125 1.125 0 0 1 0-1.954l7.108-4.061a1.125 1.125 0 0 1 1.683.977v8.122Z" />
+            </svg>
+
+          </button>
+          <button data-amplitude-playlist="official_track" class="amplitude-play inline-flex flex-col items-center justify-center px-5 py-3 rounded-full hover:bg-gray-900 group">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+            </svg>
+          </button>
+          <button data-amplitude-playlist="official_track" class="amplitude-pause inline-flex flex-col items-center justify-center px-5 py-3 rounded-full hover:bg-gray-900 group">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+            </svg>
+          </button>
+          <button data-amplitude-playlist="official_track" class="amplitude-next inline-flex flex-col items-center justify-center px-5 py-3 rounded-full hover:bg-gray-900 group">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="p-6">
+      <div class="border border-gray-500 rounded-lg">
+        <div class="h-screen amplitude-visualization"></div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="assets/dist/amplitude.js"></script>
+  <script type="text/javascript" src="assets/dist/visualizations/michaelbromley.js"></script>
+  <script>
+    Amplitude.init({
+      bindings: {
+        39: 'next'
+      },
+      continue_next: false,
+      start_song: 3,
+      starting_playlist: 'official_track',
+      starting_playlist_song: 3,
+      volume: 35,
+      volume_increment: 10,
+      volume_decrement: 10,
+      start_song: 3,
+      shuffle_on: false,
+      songs: [
+        {
+          "name": "Even",
+          "artist": "Macärdès De Pröducèz",
+          "album": "Official Track",
+          "url": "assets/audio/even.mp3",
+          "cover_art_url": "assets/cover/art/1.png"
+        },
+        {
+          "name": "Not Easy",
+          "artist": "Macärdès De Pröducèz",
+          "album": "Official Track",
+          "url": "assets/audio/not-easy.mp3",
+          "cover_art_url": "assets/cover/art/2.png"
+        }
+      ],
+      callbacks: {
+        stop: function(){
+          var stoppedAlert = document.getElementById('stopped-alert');
+          stoppedAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            stoppedAlert.classList.add('hidden');
+          }, 5000);
+        },
+        abort: function(){
+          var abortedAlert = document.getElementById('aborted-alert');
+          abortedAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            abortedAlert.classList.add('hidden');
+          }, 5000);
+        },
+        error: function(){
+          var errorAlert = document.getElementById('error-alert');
+          errorAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            errorAlert.classList.add('hidden');
+          }, 5000);
+        },
+        loadeddata: function(){
+          var loadeddataAlert = document.getElementById('loadeddata-alert');
+          loadeddataAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            loadeddataAlert.classList.add('hidden');
+          }, 5000);
+        },
+        loadedmetadata: function(){
+          var loadedmetadataAlert = document.getElementById('loadedmetadata-alert');
+          loadedmetadataAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            loadedmetadataAlert.classList.add('hidden');
+          }, 5000);
+        },
+        loadstart: function(){
+          var loadstartAlert = document.getElementById('loadstart-alert');
+          loadstartAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            loadstartAlert.classList.add('hidden');
+          }, 5000);
+        },
+        pause: function(){
+          var pauseAlert = document.getElementById('pause-alert');
+          pauseAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            pauseAlert.classList.add('hidden');
+          }, 5000);
+        },
+        playing: function(){
+          var playingAlert = document.getElementById('playing-alert');
+          playingAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            playingAlert.classList.add('hidden');
+          }, 5000);
+        },
+        play: function(){
+          var playAlert = document.getElementById('played-alert');
+          playAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            playAlert.classList.add('hidden');
+          }, 5000);
+        },
+        progress: function(){
+          var progressAlert = document.getElementById('progress-alert');
+          progressAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            progressAlert.classList.add('hidden');
+          }, 5000);
+        },
+        ratechange: function(){
+          var ratechangeAlert = document.getElementById('ratechange-alert');
+          ratechangeAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            ratechangeAlert.classList.add('hidden');
+          }, 5000);
+        },
+        seeked: function(){
+          var seekedAlert = document.getElementById('seeked-alert');
+          seekedAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            seekedAlert.classList.add('hidden');
+          }, 5000);
+        },
+        seeking: function(){
+          var seekingAlert = document.getElementById('seeking-alert');
+          seekingAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            seekingAlert.classList.add('hidden');
+          }, 5000);
+        },
+        stalled: function(){
+          var stalledAlert = document.getElementById('stalled-alert');
+          stalledAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            stalledAlert.classList.add('hidden');
+          }, 5000);
+        },
+        suspend: function(){
+          var suspendAlert = document.getElementById('suspend-alert');
+          suspendAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            suspendAlert.classList.add('hidden');
+          }, 5000);
+        },
+        timeupdate: function(){
+          var timeupdateAlert = document.getElementById('timeupdate-alert');
+          timeupdateAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            timeupdateAlert.classList.add('hidden');
+          }, 5000);
+        },
+        volumechange: function(){
+          var volumechangeAlert = document.getElementById('volumechange-alert');
+          volumechangeAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            volumechangeAlert.classList.add('hidden');
+          }, 5000);
+        },
+        waiting: function(){
+          var waitingAlert = document.getElementById('waiting-alert');
+          waitingAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            waitingAlert.classList.add('hidden');
+          }, 5000);
+        },
+        canplay: function(){
+          var canplayAlert = document.getElementById('canplay-alert');
+          canplayAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            canplayAlert.classList.add('hidden');
+          }, 5000);
+        },
+        canplaythrough: function(){
+          var canplaythroughAlert = document.getElementById('canplaythrough-alert');
+          canplaythroughAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            canplaythroughAlert.classList.add('hidden');
+          }, 5000);
+        },
+        durationchange: function(){
+          var durationchangeAlert = document.getElementById('durationchange-alert');
+          durationchangeAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            durationchangeAlert.classList.add('hidden');
+          }, 5000);
+        },
+        ended: function(){
+          var endedAlert = document.getElementById('ended-alert');
+          endedAlert.classList.remove('hidden');
+          // 5分後に隠しクラスを削除する
+          setTimeout(function(){
+            endedAlert.classList.add('hidden');
+          }, 5000);
+        },
+      },
+      default_album_art: "cover/art/default.png",
+      waveforms: {
+        sample_rate: 3000
+      },
+      playlists: {
+        "official_track": {
+          songs: [0, 1],
+          title: 'Official Track'
+        }
+      },
+      delay: 3000,
+      visualizations: [
+        {
+          object: MichaelBromleyVisualization,
+          params: {
+
+          }
+        }
+      ],
+      visualization: 'michaelbromley_visualization'
+    });
+  </script>
+</body>
+
+</html>
